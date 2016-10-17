@@ -90,26 +90,26 @@ public:
         val_ = buffer;
     }
 
-    int64_t get_int()
+    int64_t get_int() const
     {
         assert(TYPE_INT == type_);
         return std::stoll(val_);
     }
 
-    uint64_t get_uint()
+    uint64_t get_uint() const
     {
         assert(TYPE_UINT == type_);
         return std::stoull(val_);
     }
 
-    bool get_boolean()
+    bool get_boolean() const
     {
         assert(TYPE_BOOLEAN == type_);
         return (val_ == "true");
     }
 
     //小数点最多6位
-    double get_double()
+    double get_double() const
     {
         assert(TYPE_REAL == type_);
         return std::stod(val_);
@@ -157,17 +157,17 @@ public:
     bool    PairDel (const std::string& key);
     bool    PairDel (const char* key);
 
-    bool    PairGet (const std::string& key, Value* value);
-    bool    PairGet (const char* key, Value* value);
+    bool    PairGet (const std::string& key, Value* value) const;
+    bool    PairGet (const char* key, Value* value) const;
 
-    size_t  PairSize()  { if(0 == pairs_) return 0;  return pairs_->size(); }
+    size_t  PairSize() const { if(0 == pairs_) return 0;  return pairs_->size(); }
 
     JsonPairIter PairIterBegin  () const    { return pairs_->begin(); }
     JsonPairIter PairIterEnd    () const    { return pairs_->end(); }
     
     //array
     void            ArrayResize (size_t size);
-    size_t          ArraySize   ()              { if(0 == array_) return 0; return array_->size(); }
+    size_t          ArraySize   () const    { if(0 == array_) return 0; return array_->size(); }
 
     void            ArraySet    (size_t index, const Value& value);
     void            ArraySet    (size_t index, const Value&& value);

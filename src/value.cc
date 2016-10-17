@@ -325,12 +325,12 @@ bool Value::PairDel(const char* key)
     return (1 <= nums);
 }
 //---------------------------------------------------------------------------
-bool Value::PairGet(const std::string& key, Value* value)
+bool Value::PairGet(const std::string& key, Value* value) const
 {
     return PairGet(key.c_str(), value);
 }
 //---------------------------------------------------------------------------
-bool Value::PairGet(const char* key, Value* value)
+bool Value::PairGet(const char* key, Value* value) const
 {
     if(0 == pairs_)
     {
