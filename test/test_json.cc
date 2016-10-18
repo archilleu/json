@@ -2,9 +2,9 @@
 #include "test_json.h"
 #include "../src/token_reader.h"
 #include "../src/char_reader.h"
-#include "json_reader.h"
-#include "value.h"
-#include "json_writer.h"
+#include "../src/json_reader.h"
+#include "../src/value.h"
+#include "../src/json_writer.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <fstream>

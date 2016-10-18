@@ -7,7 +7,6 @@ int main(int , char** )
     test.StartTest();
     
     printf("success\n");
-    getchar();
     return 0;
 }
 //---------------------------------------------------------------------------
