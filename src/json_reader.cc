@@ -361,7 +361,7 @@ bool JsonReader::CaseStatusObjectEnd()
         return true;
     }
     
-    Value object = parse_stack_.top();
+    Value object(std::move(parse_stack_.top()));
     parse_stack_.pop();
 
     //如果当前栈顶元素是key,则说明是{key1:{key2:value}}这种情况,添加{key2:value}到key1所属于的对象中
@@ -497,7 +497,7 @@ bool JsonReader::CaseStatusArrayEnd()
         return false;
 
     //array
-    Value array = parse_stack_.top();
+    Value array(std::move(parse_stack_.top()));
     parse_stack_.pop();
 
     //如果当前栈顶元素是key,则说明是{key1:[value]}这种情况,添加[value]到key1所属于的对象中
