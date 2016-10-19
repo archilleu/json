@@ -14,6 +14,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <float.h>
 //---------------------------------------------------------------------------
 using namespace test;
 using namespace json;
@@ -64,8 +65,7 @@ bool TestJson::Test_Value_Base()
 {
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_KEY);
+    Value value_none(Value::KEY);
     const char* c_str = "key";
     value_none.set_str(c_str);
     MY_ASSERT(value_none.val() == std::string(c_str));
@@ -76,8 +76,8 @@ bool TestJson::Test_Value_Base()
     value_none.set_str(std::move(s_str));
     MY_ASSERT(value_none.val() == std::string(c_str));
 
-    Value value(Value::TYPE_KEY);
-    MY_ASSERT(Value::TYPE_KEY == value.type());
+    Value value(Value::KEY);
+    MY_ASSERT(Value::KEY == value.type());
     value.set_str(c_str);
     MY_ASSERT(value.val() == std::string(c_str));
 
@@ -92,7 +92,7 @@ bool TestJson::Test_Value_Base()
     MY_ASSERT(value.val() == val_copy.val());
 
     //=
-    Value val_assg= value;
+    Value val_assg = value;
     MY_ASSERT(value.val() == val_assg.val());
 
     //move
@@ -107,8 +107,7 @@ bool TestJson::Test_Value_Base()
     //string
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_STRING);
+    Value value_none(Value::STRING);
     const char* c_str = "string";
     value_none.set_str(c_str);
     MY_ASSERT(value_none.val() == std::string(c_str));
@@ -119,8 +118,8 @@ bool TestJson::Test_Value_Base()
     value_none.set_str(std::move(s_str));
     MY_ASSERT(value_none.val() == std::string(c_str));
 
-    Value value(Value::TYPE_STRING);
-    MY_ASSERT(Value::TYPE_STRING == value.type());
+    Value value(Value::STRING);
+    MY_ASSERT(Value::STRING == value.type());
     value.set_str(c_str);
     MY_ASSERT(value.val() == std::string(c_str));
 
@@ -150,15 +149,14 @@ bool TestJson::Test_Value_Base()
     //int
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_INT);
+    Value value_none(Value::INT);
     int64_t int64 = 0x7FFFFFFFFFFFFFFF;
     value_none.set_int(int64);
     MY_ASSERT(value_none.val() == base::CombineString("%" PRId64 "", int64));
     MY_ASSERT(value_none.get_int() == int64);
 
-    Value value(Value::TYPE_INT);
-    MY_ASSERT(Value::TYPE_INT == value.type());
+    Value value(Value::INT);
+    MY_ASSERT(Value::INT == value.type());
     value.set_int(int64);
     MY_ASSERT(value.val() == base::CombineString("%" PRId64 "", int64));
     MY_ASSERT(value.get_int() == int64);
@@ -183,15 +181,14 @@ bool TestJson::Test_Value_Base()
     //uint
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_UINT);
+    Value value_none(Value::UINT);
     uint64_t uint64 = 0xFFFFFFFFFFFFFFFF;
     value_none.set_uint(uint64);
     MY_ASSERT(value_none.val() == base::CombineString("%" PRIu64 "", uint64));
     MY_ASSERT(value_none.get_uint() == uint64);
 
-    Value value(Value::TYPE_UINT);
-    MY_ASSERT(Value::TYPE_UINT == value.type());
+    Value value(Value::UINT);
+    MY_ASSERT(Value::UINT == value.type());
     value.set_uint(uint64);
     MY_ASSERT(value.val() == base::CombineString("%" PRIu64 "", uint64));
     MY_ASSERT(value.get_uint() == uint64);
@@ -216,17 +213,16 @@ bool TestJson::Test_Value_Base()
     //real
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_REAL);
-    double real = 12345678.123456;
+    Value value_none(Value::REAL);
+    double real = 1.7E+100;
     value_none.set_double(real);
-    MY_ASSERT(value_none.val() == base::CombineString("%f", real));
+    double real1 = value_none.get_double();
+    MY_ASSERT(0 == (real - real1));
     MY_ASSERT(value_none.get_double() == real);
 
-    Value value(Value::TYPE_REAL);
-    MY_ASSERT(Value::TYPE_REAL == value.type());
+    Value value(Value::REAL);
+    MY_ASSERT(Value::REAL == value.type());
     value.set_double(real);
-    MY_ASSERT(value.val() == base::CombineString("%f", real));
     MY_ASSERT(value.get_double() == real);
 
     //复制构造
@@ -249,15 +245,14 @@ bool TestJson::Test_Value_Base()
     //boolean true
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_BOOLEAN);
+    Value value_none(Value::BOOLEAN);
     bool boolean = true;
     value_none.set_boolean(boolean);
     MY_ASSERT(value_none.val() == "true");
     MY_ASSERT(value_none.get_boolean() == boolean);
 
-    Value value(Value::TYPE_BOOLEAN);
-    MY_ASSERT(Value::TYPE_BOOLEAN == value.type());
+    Value value(Value::BOOLEAN);
+    MY_ASSERT(Value::BOOLEAN == value.type());
     value.set_boolean(boolean);
     MY_ASSERT(value.val() == "true");
     MY_ASSERT(value.get_boolean() == boolean);
@@ -282,15 +277,14 @@ bool TestJson::Test_Value_Base()
     //boolean false
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_BOOLEAN);
+    Value value_none(Value::BOOLEAN);
     bool boolean = false;
     value_none.set_boolean(boolean);
     MY_ASSERT(value_none.val() == "false");
     MY_ASSERT(value_none.get_boolean() == boolean);
 
-    Value value(Value::TYPE_BOOLEAN);
-    MY_ASSERT(Value::TYPE_BOOLEAN == value.type());
+    Value value(Value::BOOLEAN);
+    MY_ASSERT(Value::BOOLEAN == value.type());
     value.set_boolean(boolean);
     MY_ASSERT(value.val() == "false");
     MY_ASSERT(value.get_boolean() == boolean);
@@ -315,11 +309,10 @@ bool TestJson::Test_Value_Base()
     //null
     {
     //基本操作
-    Value value_none;
-    value_none.set_type(Value::TYPE_NULL);
+    Value value_none(Value::NUL);
     MY_ASSERT(value_none.val() == "null");
 
-    Value value(Value::TYPE_NULL);
+    Value value(Value::NUL);
     MY_ASSERT(value.val() == "null");
 
     //复制构造
@@ -345,46 +338,55 @@ bool TestJson::Test_Value_Base()
     Value v_str1("str");
     Value v_str2(std::string("str"));
     Value v_str3(std::move(v_str));
-    MY_ASSERT(Value::TYPE_STRING == v_str1.type());
-    MY_ASSERT(Value::TYPE_STRING == v_str2.type());
-    MY_ASSERT(Value::TYPE_STRING == v_str3.type());
+    MY_ASSERT(Value::STRING == v_str1.type());
+    MY_ASSERT(Value::STRING == v_str2.type());
+    MY_ASSERT(Value::STRING == v_str3.type());
     MY_ASSERT("str" == v_str1.val());
     MY_ASSERT("str" == v_str2.val());
     MY_ASSERT("str" == v_str3.val());
 
     int64_t int64 = 1;
     Value v_int(int64);
-    MY_ASSERT(Value::TYPE_INT == v_int.type());
+    MY_ASSERT(Value::INT == v_int.type());
     MY_ASSERT(1 == v_int.get_int());
 
     uint64_t uint64 = 1;
     Value v_uint(uint64);
-    MY_ASSERT(Value::TYPE_UINT == v_uint.type());
+    MY_ASSERT(Value::UINT == v_uint.type());
     MY_ASSERT(1 == v_uint.get_uint());
 
     bool boolean = true;
     Value v_boolean(boolean);
-    MY_ASSERT(Value::TYPE_BOOLEAN == v_boolean.type());
+    MY_ASSERT(Value::BOOLEAN == v_boolean.type());
     MY_ASSERT(true == v_boolean.get_boolean());
 
     double real = 1;
     Value v_real(real);
-    MY_ASSERT(Value::TYPE_REAL == v_real.type());
+    MY_ASSERT(Value::REAL == v_real.type());
 
     }
+
+    {
+        Value valuen;
+        Value values("aaa");
+        valuen = Value(Value::OBJECT);
+        valuen = Value(Value::ARRAY);
+        values = Value(Value::OBJECT);
+        values = Value(Value::ARRAY);
+    }
+
     return true;
 }
 //---------------------------------------------------------------------------
 bool TestJson::Test_Value_Obj()
 {
     //object
-    Value value_none;
-    value_none.set_type(Value::TYPE_OBJECT);
-    MY_ASSERT(value_none.type() == Value::TYPE_OBJECT);
+    Value value_none(Value::OBJECT);
+    MY_ASSERT(value_none.type() == Value::OBJECT);
     MY_ASSERT(value_none.val() == "null");
 
-    Value value(Value::TYPE_OBJECT);
-    MY_ASSERT(value.type() == Value::TYPE_OBJECT);
+    Value value(Value::OBJECT);
+    MY_ASSERT(value.type() == Value::OBJECT);
     MY_ASSERT(value.val() == "null");
 
     //初始状态
@@ -402,17 +404,17 @@ bool TestJson::Test_Value_Obj()
 
     //添加pair
     {
-    Value v1(Value::TYPE_INT);
+    Value v1(Value::INT);
     v1.set_int(-1);
-    Value v2(Value::TYPE_UINT);
+    Value v2(Value::UINT);
     v2.set_uint(1);
-    Value v3(Value::TYPE_REAL);
+    Value v3(Value::REAL);
     v3.set_double(1.1);
-    Value v4(Value::TYPE_BOOLEAN);
+    Value v4(Value::BOOLEAN);
     v4.set_boolean(true);
-    Value v5(Value::TYPE_BOOLEAN);
+    Value v5(Value::BOOLEAN);
     v5.set_boolean(false);
-    Value v6(Value::TYPE_NULL);
+    Value v6(Value::NUL);
 
     value.PairAdd("key1", std::move(v1));
     value.PairAdd(std::string("key2"), std::move(v2));
@@ -451,7 +453,7 @@ bool TestJson::Test_Value_Obj()
 
     Value v6;
     MY_ASSERT(true == value.PairGet("key6", &v6));
-    MY_ASSERT(v6.type() == Value::TYPE_NULL);
+    MY_ASSERT(v6.type() == Value::NUL);
 
     for(auto iter=value.PairIterBegin(); value.PairIterEnd()!=iter; ++iter)
     {
@@ -459,7 +461,7 @@ bool TestJson::Test_Value_Obj()
     }
 
     //添加同样key值的会被覆盖
-    Value v1_cover(Value::TYPE_INT);
+    Value v1_cover(Value::INT);
     v1_cover.set_int(2);
     value.PairAdd("key1", std::move(v1_cover));
     Value v1_cover_get;
@@ -484,8 +486,8 @@ bool TestJson::Test_Value_Obj()
 
     //拷贝构造等等
     {
-    Value val(Value::TYPE_OBJECT);
-    Value v1(Value::TYPE_OBJECT);
+    Value val(Value::OBJECT);
+    Value v1(Value::OBJECT);
     value.PairAdd("key", std::move(v1));
 
     Value val_copy(val);
@@ -500,13 +502,12 @@ bool TestJson::Test_Value_Obj()
 bool TestJson::Test_Value_Array()
 {
     //array
-    Value value_none;
-    value_none.set_type(Value::TYPE_ARRAY);
-    MY_ASSERT(value_none.type() == Value::TYPE_ARRAY);
+    Value value_none(Value::ARRAY);
+    MY_ASSERT(value_none.type() == Value::ARRAY);
     MY_ASSERT(value_none.val() == "null");
 
-    Value value(Value::TYPE_ARRAY);
-    MY_ASSERT(value.type() == Value::TYPE_ARRAY);
+    Value value(Value::ARRAY);
+    MY_ASSERT(value.type() == Value::ARRAY);
     MY_ASSERT(value.val() == "null");
 
     //初始状态
@@ -516,17 +517,17 @@ bool TestJson::Test_Value_Array()
 
     //添加value
     {
-    Value v1(Value::TYPE_INT);
+    Value v1(Value::INT);
     v1.set_int(-1);
-    Value v2(Value::TYPE_UINT);
+    Value v2(Value::UINT);
     v2.set_uint(1);
-    Value v3(Value::TYPE_REAL);
+    Value v3(Value::REAL);
     v3.set_double(1.1);
-    Value v4(Value::TYPE_BOOLEAN);
+    Value v4(Value::BOOLEAN);
     v4.set_boolean(true);
-    Value v5(Value::TYPE_BOOLEAN);
+    Value v5(Value::BOOLEAN);
     v5.set_boolean(false);
-    Value v6(Value::TYPE_NULL);
+    Value v6(Value::NUL);
 
     value.ArrayAdd(std::move(v1));
     value.ArrayAdd(std::move(v2));
@@ -557,7 +558,7 @@ bool TestJson::Test_Value_Array()
     MY_ASSERT(v5.get_boolean() == false);
 
     Value v6 = value.ArrayGet(5);
-    MY_ASSERT(v6.type() == Value::TYPE_NULL);
+    MY_ASSERT(v6.type() == Value::NUL);
     }
 
     for(auto iter=value.ArrayIterBegin(); value.ArrayIterEnd()!=iter; ++iter)
@@ -566,7 +567,7 @@ bool TestJson::Test_Value_Array()
     }
 
     //添加同样key值的会被覆盖
-    Value v1_cover(Value::TYPE_INT);
+    Value v1_cover(Value::INT);
     v1_cover.set_int(2);
     value.ArraySet(0, std::move(v1_cover));
     Value v1_cover_get = value.ArrayGet(0);
@@ -585,7 +586,7 @@ bool TestJson::Test_Value_Array()
 
     for(size_t i=0; i<10; i++)
     {
-        Value v(Value::TYPE_INT);
+        Value v(Value::INT);
         v.set_int(i);
         value.ArraySet(i, std::move(v));
     }
@@ -599,8 +600,8 @@ bool TestJson::Test_Value_Array()
 
     //拷贝构造等等
     {
-    Value val(Value::TYPE_ARRAY);
-    Value v1(Value::TYPE_ARRAY);
+    Value val(Value::ARRAY);
+    Value v1(Value::ARRAY);
     value.ArrayAdd(std::move(v1));
 
     Value val_copy(val);
@@ -642,7 +643,7 @@ bool TestJson::Test_Value_Overload()
 
     {
     std::cout << "object :" << std::endl;
-    Value obj(Value::TYPE_OBJECT);
+    Value obj(Value::OBJECT);
     obj["k1"] = "string";
     obj["k2"] = 1;
     obj["k3"] = -1;
@@ -655,7 +656,7 @@ bool TestJson::Test_Value_Overload()
 
     {
     std::cout << "array:" << std::endl;
-    Value obj(Value::TYPE_ARRAY);
+    Value obj(Value::ARRAY);
     obj.ArrayResize(6);
     obj[0] = Value();
     obj[1] = "string";
@@ -670,12 +671,12 @@ bool TestJson::Test_Value_Overload()
     {
     std::cout << "object array:" << std::endl;
 
-    Value array(Value::TYPE_ARRAY);
+    Value array(Value::ARRAY);
     array.ArrayResize(2);
     array[0] = "string0";
     array[1] = "string1";
 
-    Value object(Value::TYPE_OBJECT);
+    Value object(Value::OBJECT);
     object["k1"] = 1;
     object["k2"] = 1;
     object["array1"] = std::move(array);
@@ -688,14 +689,14 @@ bool TestJson::Test_Value_Overload()
     {
     std::cout << "object array:" << std::endl;
 
-    Value array(Value::TYPE_ARRAY);
+    Value array(Value::ARRAY);
     array.ArrayResize(2);
 
-    Value object(Value::TYPE_OBJECT);
+    Value object(Value::OBJECT);
     object["k1"] = 1;
     object["k2"] = 1;
-    object["array1"] = Value(Value::TYPE_ARRAY);
-    object["array2"] = Value(Value::TYPE_ARRAY);
+    object["array1"] = Value(Value::ARRAY);
+    object["array2"] = Value(Value::ARRAY);
     object["array1"].ArrayResize(2);
     object["array1"][0] = "array1.0";
     object["array1"][1] = "array1.1";
@@ -883,22 +884,22 @@ bool TestJson::Test_TokenReader()
     reader5.set_dat(std::string(n5));
 
     std::string num;
-    json::Value::ValueType num_type;
+    json::Value::TYPE num_type;
     bool err_code = reader1.ReadNumber(num, num_type);
     MY_ASSERT(true == err_code);
-    MY_ASSERT(json::Value::TYPE_UINT == num_type);
+    MY_ASSERT(json::Value::UINT == num_type);
     MY_ASSERT(n1 == num);
     num.clear();
 
     err_code = reader2.ReadNumber(num, num_type);
     MY_ASSERT(true == err_code);
-    MY_ASSERT(json::Value::TYPE_INT == num_type);
+    MY_ASSERT(json::Value::INT == num_type);
     MY_ASSERT(n2 == num);
     num.clear();
 
     err_code = reader3.ReadNumber(num, num_type);
     MY_ASSERT(true == err_code);
-    MY_ASSERT(json::Value::TYPE_REAL == num_type);
+    MY_ASSERT(json::Value::REAL == num_type);
     MY_ASSERT(n3 == num);
     num.clear();
 
@@ -976,7 +977,7 @@ bool TestJson::Test_Json_KV()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    j_str = json::JsonWriter::ToString(root);
+    j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -990,7 +991,7 @@ bool TestJson::Test_Json_KV()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    j_str = json::JsonWriter::ToString(root);
+    j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1003,7 +1004,7 @@ bool TestJson::Test_Json_KV()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1016,7 +1017,7 @@ bool TestJson::Test_Json_KV()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1029,7 +1030,7 @@ bool TestJson::Test_Json_KV()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1047,7 +1048,7 @@ bool TestJson::Test_Json_Array()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1060,7 +1061,7 @@ bool TestJson::Test_Json_Array()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
 
     }
@@ -1074,7 +1075,7 @@ bool TestJson::Test_Json_Array()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1087,7 +1088,7 @@ bool TestJson::Test_Json_Array()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1100,7 +1101,7 @@ bool TestJson::Test_Json_Array()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1113,7 +1114,7 @@ bool TestJson::Test_Json_Array()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1131,7 +1132,7 @@ bool TestJson::Test_Json_Object()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1144,7 +1145,7 @@ bool TestJson::Test_Json_Object()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1157,7 +1158,7 @@ bool TestJson::Test_Json_Object()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1170,7 +1171,7 @@ bool TestJson::Test_Json_Object()
     bool err_code = reader.Parse(str, &root);
     MY_ASSERT(true == err_code);
 
-    std::string j_str = json::JsonWriter::ToString(root);
+    std::string j_str = json::JsonWriter(root).ToString();
     assert(j_str == str);
     }
 
@@ -1219,7 +1220,7 @@ bool TestJson::Test_Json_ArrayObject()
         bool err_code = reader.ParseFile(path, &root);
         MY_ASSERT(true == err_code);
 
-        std::string str = json::JsonWriter::ToString(root, true);
+        std::string str = json::JsonWriter(root).ToString(true);
         std::string save_file = "./json_file/"+std::string("b.")+*i;
         std::ofstream out(save_file);
         if(out)
@@ -1239,7 +1240,7 @@ bool TestJson::Test_json_Format()
     if(false == err_code)
         return false;
 
-    std::string format_str = json::JsonWriter::ToString(root, true);
+    std::string format_str = json::JsonWriter(root).ToString(true);
     std::cout << format_str << std::endl;
     return true;
 }

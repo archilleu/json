@@ -43,11 +43,11 @@ public:
     //读取下一个Token
     TokenType ReadNextToken();
     
-    //读取字符串等值
+    //读取字符串的值
     bool ReadString(std::string& str);
 
     //读取数值类型
-    bool ReadNumber(std::string& num, Value::ValueType& type);
+    bool ReadNumber(std::string& num, Value::TYPE& type);
 
     //布尔类型
     bool ReadBoolean(bool& boolean);

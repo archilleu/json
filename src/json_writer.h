@@ -12,19 +12,20 @@ class Value;
 class JsonWriter
 {
 public:
-    JsonWriter()
+    JsonWriter(const Value& val)
+    :   val_(val)
     {
     }
     ~JsonWriter()
     {
     }
 
-    static std::string ToString(const Value& value, bool format=false);
+    std::string ToString(bool format=false);
 
 private:
-    static void ToString        (const Value& value, std::string& str, bool format, int deep);
-    static void ObjectToString  (const Value& value, std::string& str, bool format, int deep);
-    static void ArrayToString   (const Value& value, std::string& str, bool format, int deep);
+    void ToString        (const Value& value, std::string& str, bool format, int deep);
+    void ObjectToString  (const Value& value, std::string& str, bool format, int deep);
+    void ArrayToString   (const Value& value, std::string& str, bool format, int deep);
 
     static void AddTab(std::string& str, int deep)
     {
@@ -32,7 +33,10 @@ private:
             str.push_back('\t');
     }
 
-    static void AddString(const std::string& from, std::string& str);
+    void AddString(const std::string& from, std::string& str);
+
+private:
+    const Value& val_;
 };
 
 }//namespace json

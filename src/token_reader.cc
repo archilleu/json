@@ -44,12 +44,12 @@ TokenReader::TokenType TokenReader::ReadNextToken()
             return STRING;
 
         case 'n':
-//            char_reader_.Next();
+//            char_reader_.Next(); 将一次读完整个值
             return NUL;
 
         case 't':
         case 'f':
-//           char_reader_.Next();
+//           char_reader_.Next(); 将一次读完整个值
             return BOOLEAN;
 
         case '-':
@@ -63,7 +63,7 @@ TokenReader::TokenType TokenReader::ReadNextToken()
         case '7':
         case '8':
         case '9':
-//            char_reader_.Next();
+//            char_reader_.Next(); 将一次读完整个值
             return NUMBER;
     }
 
@@ -82,7 +82,7 @@ bool TokenReader::ReadString(std::string& str)
         switch(c)
         {
             case '\\'://转义字符
-                {
+            {
                 if(!char_reader_.HasMore())
                     break;
 
@@ -128,15 +128,15 @@ bool TokenReader::ReadString(std::string& str)
                     default:
                         return false;
                 }
-                }
+
                 break;
+            }
 
             case '\"':  //结束
                 return true;
             
             default:    //普通字符
                 str.push_back(c);
-                break;
         }
     }
 
@@ -144,35 +144,48 @@ bool TokenReader::ReadString(std::string& str)
     return false;
 }
 //---------------------------------------------------------------------------
-bool TokenReader::ReadNumber(std::string& number, Value::ValueType& type)
+bool TokenReader::ReadNumber(std::string& number, Value::TYPE& type)
 {
     //数值分为2个部分构成
-    //整数部分和小数部分(不支持指数表示)
+    //整数部分和小数部分
     
-    char        c;
-    bool        has_sign    = false;
-    bool        has_decimal = false;
+    char c;
+    bool has_sign = false;
+    bool has_decimal = false;
+    bool has_exp = false;
     for(;;)
     {
-        if(char_reader_.HasMore())
-        {
-            c = char_reader_.Peek();
+        if(!char_reader_.HasMore())
+            break;
+        
+        c = char_reader_.Peek();
 
-            //检查是否是数字,如果不是数字,则有可能该数字不是正确的数字(例如:123a),这种情况留給上一层处理
-            if(false == CheckNumber(c))
-                break;
-        }
-        else
+        //检查是否是数字,如果不是数字,则有可能该数字不是正确的数字(例如:123a或 123,),这种情况留給上一层处理
+        if(false == CheckNumber(c))
             break;
 
         switch(c)
         {
-            case '-':
-                //符号位不是第0位
-                if(0 < number.size())
-                    return false;
+            case '+':
+                //符号位是第0位,代表是有符号数值
+                if(0 == number.size())
+                    has_sign = true;
+                else
+                {
+                    //代表科学计数法，前面必须有e or E
+                    if('e'!=number.back() || 'E'!=number.back())
+                        return false;
+                }
 
-                has_sign = true;
+                number.push_back(c);
+                char_reader_.Next();
+                break;
+
+            case '-':
+                //符号位是第0位,代表是有符号数值
+                if(0 == number.size())
+                    has_sign = true;
+
                 number.push_back(c);
                 char_reader_.Next();
                 break;
@@ -190,7 +203,13 @@ bool TokenReader::ReadNumber(std::string& number, Value::ValueType& type)
 
             case 'E':
             case 'e':
-                //todo 指数
+                //已经出现过exp了
+                if(has_exp)
+                    return false;
+
+                has_exp = true;
+                number.push_back(c);
+                char_reader_.Next();
                 break;
 
             default:
@@ -215,7 +234,7 @@ bool TokenReader::ReadNumber(std::string& number, Value::ValueType& type)
     //值是小数
     if(true == has_decimal)
     {
-        type = Value::TYPE_REAL;
+        type = Value::REAL;
         return true;
     }
 
@@ -225,7 +244,7 @@ bool TokenReader::ReadNumber(std::string& number, Value::ValueType& type)
         if((2<number.size()) && ('0'==number[1]))
             return false;
 
-        type = Value::TYPE_INT;
+        type = Value::INT;
     }
     else                    //无符号整数
     {
@@ -233,7 +252,7 @@ bool TokenReader::ReadNumber(std::string& number, Value::ValueType& type)
         if((1<number.size()) &&('0'==number[0]))
             return false;
 
-        type = Value::TYPE_UINT;
+        type = Value::UINT;
     }
 
     return true;

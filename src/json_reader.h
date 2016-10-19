@@ -37,20 +37,21 @@ private:
     bool HasStatus(int status)  { return (cur_status_ & status); }
 
 private:
-    bool CaseStatusObjectBegin  (std::stack<Value>& parse_stack);
-    bool CaseStatusObjectKey    (std::stack<Value>& parse_stack);
-    bool CaseStatusObjectValue  (std::stack<Value>& parse_stack, int type);
-    bool CaseStatusObjectEnd    (std::stack<Value>& parse_stack);
-    bool CaseStatusArrayBegin   (std::stack<Value>& parse_stack);
-    bool CaseStatusArrayValue   (std::stack<Value>& parse_stack, int type);
-    bool CaseStatusArrayEnd     (std::stack<Value>& parse_stack);
-    bool CaseStatusSepColon     (std::stack<Value>& parse_stack);
-    bool CaseStatusSepComma     (std::stack<Value>& parse_stack);
-    bool CaseStatusDocumentEnd  (std::stack<Value>& parse_stack);
+    bool CaseStatusObjectBegin  ();
+    bool CaseStatusObjectKey    ();
+    bool CaseStatusObjectValue  (int type);
+    bool CaseStatusObjectEnd    ();
+    bool CaseStatusArrayBegin   ();
+    bool CaseStatusArrayValue   (int type);
+    bool CaseStatusArrayEnd     ();
+    bool CaseStatusSepColon     ();
+    bool CaseStatusSepComma     ();
+    bool CaseStatusDocumentEnd  ();
 
 private:
-    std::shared_ptr<TokenReader>    token_reader_;
-    int                             cur_status_;    //当前解析状态,即下一个期待的字符类型
+    std::shared_ptr<TokenReader> token_reader_;
+    std::stack<Value> parse_stack_;
+    int cur_status_;    //当前解析状态,即下一个期待的字符类型
 
 private:
     //解析过程中的状态(期待的下一个字符类型)

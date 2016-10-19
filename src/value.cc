@@ -5,61 +5,58 @@
 namespace json
 {
 //---------------------------------------------------------------------------
-const Value Value::kValueNull = Value(TYPE_NULL);
+const Value Value::kValueNull = Value(NUL);
 //---------------------------------------------------------------------------
 Value::Value()
-:   type_(TYPE_NULL),
+:   type_(NUL),
+    val_("null"),
     array_(0),
     pairs_(0)
 {
-    val_ = "null";
     return;
 }
 //---------------------------------------------------------------------------
-Value::Value(ValueType val_type)
+Value::Value(TYPE val_type)
 :   type_(val_type),
+    val_("null"),
     array_(0),
     pairs_(0)
 {
-    if(type_ == TYPE_OBJECT)
-        pairs_= new JsonPair;
+    if(type_ == OBJECT) { pairs_ = new Pair; return; }
+    if(type_ == ARRAY)  { array_ = new Array; return; }
 
-    if(type_ == TYPE_ARRAY)
-        array_ = new JsonArray;
-
-    val_ = "null";
     return;
 }
 //---------------------------------------------------------------------------
 Value::Value(const std::string& value)
-:   type_(TYPE_STRING),
+:   type_(STRING),
+    val_(value),
     array_(0),
     pairs_(0)
 {
-    val_ = value;
     return;
 }
 //---------------------------------------------------------------------------
 Value::Value(std::string&& value)
-:   type_(TYPE_STRING),
+:   type_(STRING),
+    val_(std::move(value)),
     array_(0),
     pairs_(0)
 {
-    val_ = std::move(value);
     return;
 }
 //---------------------------------------------------------------------------
 Value::Value(const char* value)
-:   type_(TYPE_STRING),
+:   type_(STRING),
+    val_(value),
     array_(0),
     pairs_(0)
 {
-    val_ = value;
     return;
 }
 //---------------------------------------------------------------------------
 Value::Value(int value)
-:   type_(TYPE_INT),
+:   type_(INT),
     array_(0),
     pairs_(0)
 {
@@ -68,7 +65,7 @@ Value::Value(int value)
 }
 //---------------------------------------------------------------------------
 Value::Value(int64_t value)
-:   type_(TYPE_INT),
+:   type_(INT),
     array_(0),
     pairs_(0)
 {
@@ -77,7 +74,7 @@ Value::Value(int64_t value)
 }
 //---------------------------------------------------------------------------
 Value::Value(uint64_t value)
-:   type_(TYPE_UINT),
+:   type_(UINT),
     array_(0),
     pairs_(0)
 {
@@ -86,7 +83,7 @@ Value::Value(uint64_t value)
 }
 //---------------------------------------------------------------------------
 Value::Value(double value)
-:   type_(TYPE_REAL),
+:   type_(REAL),
     array_(0),
     pairs_(0)
 {
@@ -95,7 +92,7 @@ Value::Value(double value)
 }
 //---------------------------------------------------------------------------
 Value::Value(bool value)
-:   type_(TYPE_BOOLEAN),
+:   type_(BOOLEAN),
     array_(0),
     pairs_(0)
 {
@@ -104,12 +101,20 @@ Value::Value(bool value)
 }
 //---------------------------------------------------------------------------
 Value::Value(const Value& other)
+:   type_(NUL),
+    val_("null"),
+    array_(0),
+    pairs_(0)
 {
     *this = other;
     return;
 }
 //---------------------------------------------------------------------------
 Value::Value(Value&& other)
+:   type_(NUL),
+    val_("null"),
+    array_(0),
+    pairs_(0)
 {
     *this = std::move(other);
     return;
@@ -120,30 +125,29 @@ Value& Value::operator=(const Value& other)
     if(this == &other)
         return *this;
 
-    type_   = other.type_;
-    val_    = other.val_;
-    array_  = 0;
-    pairs_  = 0;
+    if(type_ == TYPE::OBJECT)   { delete pairs_; pairs_ = 0; };
+    if(type_ == TYPE::ARRAY)    { delete array_; array_ = 0; };
 
-    switch(type_)
+    type_ = other.type_;
+    val_ = other.val_;
+
+    switch(other.type_)
     {
-        case TYPE_OBJECT:
-            pairs_ = new JsonPair;
-            *pairs_= *(other.pairs_);
+        case OBJECT:
+            pairs_ = new Pair(*(other.pairs_));
             break;
 
-        case TYPE_ARRAY:
-            array_  = new JsonArray;
-            *array_ = *(other.array_);
+        case ARRAY:
+            array_  = new Array(*(other.array_));
             break;
 
-        case TYPE_KEY:
-        case TYPE_STRING:
-        case TYPE_INT:
-        case TYPE_UINT:
-        case TYPE_REAL:
-        case TYPE_BOOLEAN:
-        case TYPE_NULL:
+        case KEY:
+        case STRING:
+        case INT:
+        case UINT:
+        case REAL:
+        case BOOLEAN:
+        case NUL:
             break;
 
         default:
@@ -155,44 +159,45 @@ Value& Value::operator=(const Value& other)
 //---------------------------------------------------------------------------
 Value& Value::operator=(Value&& other)
 {
-    type_       = other.type_;
-    val_        = std::move(other.val_);
-    other.val_  = "null";
-    array_      = 0;
-    pairs_      = 0;
+    if(type_ == TYPE::OBJECT)   { delete pairs_; pairs_ = 0; };
+    if(type_ == TYPE::ARRAY)    { delete array_; array_ = 0; };
 
-    switch(type_)
+    type_ = other.type_;
+    val_ = std::move(other.val_);
+
+    other.val_ = "null";
+    switch(other.type_)
     {
-        case TYPE_OBJECT:
+        case OBJECT:
             pairs_        = other.pairs_;
             other.pairs_  = 0;
             break;
 
-        case TYPE_ARRAY:
+        case ARRAY:
             array_      = other.array_;
             other.array_= 0;
             break;
 
-        case TYPE_KEY:
-        case TYPE_STRING:
-        case TYPE_INT:
-        case TYPE_UINT:
-        case TYPE_REAL:
-        case TYPE_BOOLEAN:
-        case TYPE_NULL:
+        case KEY:
+        case STRING:
+        case INT:
+        case UINT:
+        case REAL:
+        case BOOLEAN:
+        case NUL:
             break;
 
         default:
             assert(0);
     }
 
-    other.type_ = TYPE_NULL;
+    other.type_ = NUL;
     return *this;
 }
 //---------------------------------------------------------------------------
 Value::~Value()
 {
-    if(TYPE_NULL == type_)
+    if(NUL == type_)
     {
         assert(0 == array_);
         assert(0 == pairs_);
@@ -202,21 +207,21 @@ Value::~Value()
 
     switch(type_)
     {
-        case TYPE_OBJECT:
+        case OBJECT:
             delete pairs_;
             break;
 
-        case TYPE_ARRAY:
+        case ARRAY:
             delete array_;
             break;
         
-        case TYPE_KEY:
-        case TYPE_STRING:
-        case TYPE_INT:
-        case TYPE_UINT:
-        case TYPE_REAL:
-        case TYPE_BOOLEAN:
-        case TYPE_NULL:
+        case KEY:
+        case STRING:
+        case INT:
+        case UINT:
+        case REAL:
+        case BOOLEAN:
+        case NUL:
             break;
 
         default:
@@ -226,103 +231,66 @@ Value::~Value()
     return;
 }
 //---------------------------------------------------------------------------
-void Value::set_type(ValueType type_val)
+Value& Value::PairAdd(const std::string& key, const Value& value)
 {
-    assert(TYPE_NULL == type_);
-
-    type_ = type_val;
-
-    if(type_ == TYPE_OBJECT)
-        pairs_= new JsonPair;
-
-    if(type_ == TYPE_ARRAY)
-        array_ = new JsonArray;
-
-    return;
+    return PairAdd(key.c_str(), value);
 }
 //---------------------------------------------------------------------------
-void Value::PairAdd(const std::string& key, const Value& value)
+Value& Value::PairAdd(std::string&& key, const Value& value)
 {
-    PairAdd(key.c_str(), value);
-    return;
-}
-//---------------------------------------------------------------------------
-void Value::PairAdd(std::string&& key, const Value& value)
-{
-    if(0 == pairs_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != pairs_);
 
-    (*pairs_)[std::move(key)] = value;
-    return;
+    auto& ret = (*pairs_)[std::move(key)];
+    ret = value;
+    return ret;
 }
 //---------------------------------------------------------------------------
-void Value::PairAdd(const char* key, const Value& value)
+Value& Value::PairAdd(const char* key, const Value& value)
 {
-    if(0 == pairs_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != pairs_);
 
-    (*pairs_)[key] = value;
-    return;
+    auto& ret = (*pairs_)[key];
+    ret = value;
+    return ret;
 }
 //---------------------------------------------------------------------------
-void Value::PairAdd(const std::string& key, Value&& value)
+Value& Value::PairAdd(const std::string& key, Value&& value)
 {
-    PairAdd(key.c_str(), std::move(value));
-    return;
+    return PairAdd(key.c_str(), std::move(value));
 }
 //---------------------------------------------------------------------------
-void Value::PairAdd(std::string&& key, Value&& value)
+Value& Value::PairAdd(std::string&& key, Value&& value)
 {
-    if(0 == pairs_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != pairs_);
 
-    (*pairs_)[std::move(key)] = std::move(value);
-    return;
+    auto& ret = (*pairs_)[std::move(key)];
+    ret = std::move(value);
+    return ret;
 }
 //---------------------------------------------------------------------------
-void Value::PairAdd(const char* key, Value&& value)
+Value& Value::PairAdd(const char* key, Value&& value)
 {
-    if(0 == pairs_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != pairs_);
 
-    (*pairs_)[key] = std::move(value);
-    return;
+    auto& ret = (*pairs_)[key];
+    ret = std::move(value);
+    return ret;
 }
 //---------------------------------------------------------------------------
 bool Value::PairDel(const std::string& key)
 {
-    if(0 == pairs_)
-    {
-        assert(0);
-        return false;
-    }
+    assert(0 != pairs_);
 
     size_t nums = pairs_->erase(key);
-    return (1 <= nums);
+    return (1 == nums);
 }
 //---------------------------------------------------------------------------
 bool Value::PairDel(const char* key)
 {
-    if(0 == pairs_)
-    {
-        assert(0);
-        return false;
-    }
+    assert(0 != pairs_);
 
     size_t nums = pairs_->erase(key);
-    return (1 <= nums);
+    return (1 == nums);
 }
 //---------------------------------------------------------------------------
 bool Value::PairGet(const std::string& key, Value* value) const
@@ -332,11 +300,7 @@ bool Value::PairGet(const std::string& key, Value* value) const
 //---------------------------------------------------------------------------
 bool Value::PairGet(const char* key, Value* value) const
 {
-    if(0 == pairs_)
-    {
-        assert(0);
-        return false;
-    }
+    assert(0 != pairs_);
 
     auto iter = pairs_->find(key);
     if(pairs_->end() == iter)
@@ -348,11 +312,7 @@ bool Value::PairGet(const char* key, Value* value) const
 //---------------------------------------------------------------------------
 void Value::ArrayResize(size_t size)
 {
-    if(0 == array_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != array_);
 
     array_->resize(size);
     return;
@@ -360,11 +320,7 @@ void Value::ArrayResize(size_t size)
 //---------------------------------------------------------------------------
 void Value::ArraySet(size_t index, const Value& value)
 {
-    if(0 == array_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != array_);
 
     array_->at(index) = value;
     return;
@@ -372,11 +328,7 @@ void Value::ArraySet(size_t index, const Value& value)
 //---------------------------------------------------------------------------
 void Value::ArraySet(size_t index, const Value&& value)
 {
-    if(0 == array_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != array_);
 
     array_->at(index) = std::move(value);
     return;
@@ -384,32 +336,21 @@ void Value::ArraySet(size_t index, const Value&& value)
 //---------------------------------------------------------------------------
 Value& Value::ArrayGet(size_t index)
 {
-    if(0 == array_)
-    {
-        assert(0);
-    }
+    assert(0 != array_);
 
     return array_->at(index);
 }
 //---------------------------------------------------------------------------
 const Value& Value::ArrayGet(size_t index) const
 {
-    if(0 == array_)
-    {
-        assert(0);
-        return kValueNull;
-    }
+    assert(0 != array_);
 
     return array_->at(index); 
 }
 //---------------------------------------------------------------------------
 void Value::ArrayAdd(const Value& value)
 {
-    if(0 == array_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != array_);
 
     array_->push_back(value);
     return;
@@ -417,11 +358,7 @@ void Value::ArrayAdd(const Value& value)
 //---------------------------------------------------------------------------
 void Value::ArrayAdd(Value&& value)
 {
-    if(0 == array_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != array_);
 
     array_->push_back(std::move(value));
     return;
@@ -429,11 +366,7 @@ void Value::ArrayAdd(Value&& value)
 //---------------------------------------------------------------------------
 void Value::ArrayZero(size_t index)
 {
-    if(0 == array_)
-    {
-        assert(0);
-        return;
-    }
+    assert(0 != array_);
 
     array_->at(index) = kValueNull;
     return;
@@ -441,7 +374,7 @@ void Value::ArrayZero(size_t index)
 //---------------------------------------------------------------------------
 Value& Value::operator[](const char* key)
 {
-    assert(TYPE_OBJECT == type_);
+    assert(OBJECT == type_);
     
     Value& value = (*pairs_)[key];
     return value;
@@ -449,7 +382,7 @@ Value& Value::operator[](const char* key)
 //---------------------------------------------------------------------------
 Value& Value::operator[](const std::string& key)
 {
-    assert(TYPE_OBJECT == type_);
+    assert(OBJECT == type_);
     
     Value& value = (*pairs_)[key];
     return value;
@@ -457,7 +390,7 @@ Value& Value::operator[](const std::string& key)
 //---------------------------------------------------------------------------
 const Value& Value::operator[](const char* key) const
 {
-    assert(TYPE_OBJECT == type_);
+    assert(OBJECT == type_);
     
     const Value& value = (*pairs_)[key];
     return value;
@@ -465,7 +398,7 @@ const Value& Value::operator[](const char* key) const
 //---------------------------------------------------------------------------
 const Value& Value::operator[](const std::string& key) const
 {
-    assert(TYPE_OBJECT == type_);
+    assert(OBJECT == type_);
     
     const Value& value = (*pairs_)[key];
     return value;
@@ -473,21 +406,33 @@ const Value& Value::operator[](const std::string& key) const
 //---------------------------------------------------------------------------
 Value& Value::operator[](int index)
 {
-    assert(TYPE_ARRAY == type_);
+    assert(ARRAY == type_);
 
     return (*array_)[index];
 }
 //---------------------------------------------------------------------------
 const Value& Value::operator[](int index) const
 {
-    assert(TYPE_ARRAY == type_);
+    assert(ARRAY == type_);
 
     return (*array_)[index];
 }
 //---------------------------------------------------------------------------
 std::string Value::ToString(bool format)
 {
-    return JsonWriter::ToString(*this, format);
+    return JsonWriter(*this).ToString(format);
+}
+//---------------------------------------------------------------------------
+void Value::set_type(TYPE type_val)
+{
+    assert(NUL == type_);
+
+    type_ = type_val;
+
+    if(type_ == OBJECT) { pairs_= new Pair; return; }
+    if(type_ == ARRAY)  { array_ = new Array; return; }
+
+    return;
 }
 //---------------------------------------------------------------------------
 }//namespace json
