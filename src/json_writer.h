@@ -21,6 +21,7 @@ public:
     }
 
     std::string ToString(bool format=false);
+    bool ToFile(const std::string& path, bool format=false);
 
 private:
     void ToString        (const Value& value, std::string& str, bool format, int deep);

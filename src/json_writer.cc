@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 #include "json_writer.h"
 #include "value.h"
+#include <fstream>
 //---------------------------------------------------------------------------
 namespace json
 {
@@ -12,6 +13,16 @@ std::string JsonWriter::ToString(bool format)
     ToString(val_, str, format, deep); 
 
     return str;
+}
+//---------------------------------------------------------------------------
+bool JsonWriter::ToFile(const std::string& path, bool format)
+{
+    std::ofstream out(path);
+    if(!out)
+        return false;
+
+    out << ToString(format);
+    return true;
 }
 //---------------------------------------------------------------------------
 void JsonWriter::ToString(const Value& value, std::string& str, bool format, int deep)

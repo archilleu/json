@@ -1182,7 +1182,8 @@ bool TestJson::Test_Json_ArrayObject()
 {
     //测试一个文件夹下的数据
 
-    DIR* dir = opendir("./json_file");
+    const char* test_dir = "../../test/json_file/";
+    DIR* dir = opendir(test_dir);
     if(0 == dir)
         return false;
 
@@ -1205,7 +1206,7 @@ bool TestJson::Test_Json_ArrayObject()
     {
         json::Value         root;
         json::JsonReader    reader;
-        std::string path = "./json_file/"+*i;
+        std::string path = test_dir + *i;
         bool err_code = reader.ParseFile(path, &root);
         MY_ASSERT(false == err_code);
         std::cout << "test fail file:" << path << " sucess" << std::endl;
@@ -1216,15 +1217,15 @@ bool TestJson::Test_Json_ArrayObject()
     {
         json::Value         root;
         json::JsonReader    reader;
-        std::string path = "./json_file/"+*i;
+        std::string path = test_dir + *i;
         bool err_code = reader.ParseFile(path, &root);
         MY_ASSERT(true == err_code);
 
         std::string str = json::JsonWriter(root).ToString(true);
-        std::string save_file = "./json_file/"+std::string("b.")+*i;
-        std::ofstream out(save_file);
-        if(out)
-            out << str;
+        std::string save_file = *i;
+        JsonWriter w(root);
+        if(false == w.ToFile(save_file, true))
+            return false;
         std::cout << "test success file:" << path << " sucess" << std::endl;
     }
 
@@ -1233,7 +1234,8 @@ bool TestJson::Test_Json_ArrayObject()
 //---------------------------------------------------------------------------
 bool TestJson::Test_json_Format()
 {
-    std::string         file    = "./json_file/tostring.json";
+    const char* test_dir = "../../test/json_file/tostring.json";
+    std::string         file    =  test_dir;
     json::Value         root;
     json::JsonReader    reader;
     bool err_code = reader.ParseFile(file, &root);
