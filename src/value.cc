@@ -101,22 +101,48 @@ Value::Value(bool value)
 }
 //---------------------------------------------------------------------------
 Value::Value(const Value& other)
-:   type_(NUL),
-    val_("null"),
+:   type_(other.type_),
+    val_(other.val_),
     array_(0),
     pairs_(0)
 {
-    *this = other;
+    switch(other.type_)
+    {
+        case OBJECT:
+            pairs_ = new Pair(*(other.pairs_));
+            break;
+
+        case ARRAY:
+            array_  = new Array(*(other.array_));
+            break;
+
+        case KEY:
+        case STRING:
+        case INT:
+        case UINT:
+        case REAL:
+        case BOOLEAN:
+        case NUL:
+            break;
+
+        default:
+            assert(0);
+    }
+
     return;
 }
 //---------------------------------------------------------------------------
 Value::Value(Value&& other)
-:   type_(NUL),
-    val_("null"),
-    array_(0),
-    pairs_(0)
+:   type_(other.type_),
+    val_(std::move(other.val_)),
+    array_(other.array_),
+    pairs_(other.pairs_)
 {
-    *this = std::move(other);
+    other.type_ = NUL;
+    other.val_  = "null";
+    other.pairs_= 0;
+    other.array_= 0;
+
     return;
 }
 //---------------------------------------------------------------------------
